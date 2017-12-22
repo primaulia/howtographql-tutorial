@@ -41,9 +41,11 @@ class LinkList extends Component {
 
     return (
       <div>
-        { linksToRender.map((link, index) => {
-          return <Link key={link.id} index={index} link={link} updateStoreAfterVote={this._updateCacheAfterVote}/>
-        })}
+        { [].concat(linksToRender)
+          .sort((a, b) => a.votes.length < b.votes.length)
+          .map((link, index) => {
+            return <Link key={link.id} index={index} link={link} updateStoreAfterVote={this._updateCacheAfterVote}/>
+          })}
       </div>
     )
   }
