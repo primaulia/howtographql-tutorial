@@ -27,7 +27,7 @@ class Header extends Component {
               this.props.history.push(`/new/1`)
             }}>logout</div>
           :
-          <Link to='/login' className='ml1 no-underline black'>login</Link>
+            <Link to='/login' className='ml1 no-underline black'>login</Link>
           }
         </div>
       </div>
