@@ -58,6 +58,105 @@ class LinkList extends Component {
 
     store.writeQuery({query: ALL_LINKS_QUERY, data})
   }
+
+  _subscribeToNewLinks = () => {
+    this.props.data.subscribeToMore({
+      document: gql`
+        subscription {
+          Link(filter: {
+            mutation_in: [CREATED]
+          }) {
+            node {
+              id
+              url
+              description
+              createdAt
+              postedBy {
+                id
+                name
+              }
+              votes {
+                id
+                user {
+                  id
+                }
+              }
+            }
+          }
+        }
+      `,
+      updateQuery: (previous, { subscriptionData }) => {
+        console.log(subscriptionData)
+        const newAllLinks = [
+          ...previous.allLinks,
+          subscriptionData.data.Link.node
+        ]
+
+        const result = {
+          ...previous,
+          allLinks: newAllLinks
+        }
+
+        return result
+      }
+    })
+  }
+
+  _subscribeToNewVotes = () => {
+    this.props.data.subscribeToMore({
+      document: gql`
+        subscription {
+          Vote(filter: {
+            mutation_in: [CREATED]
+          }) {
+            node {
+              id
+              link {
+                id
+                url
+                description
+                createdAt
+                postedBy {
+                  id
+                  name
+                }
+                votes {
+                  id
+                  user {
+                    id
+                  }
+                }
+              }
+              user {
+                id
+              }
+            }
+          }
+        }
+      `,
+      updateQuery: (previous, { subscriptionData }) => {
+        const votedLinkIndex = previous.allLinks.findIndex(
+          link => link.id === subscriptionData.data.Vote.node.link.id
+        )
+
+        const link = subscriptionData.data.Vote.node.link
+
+        const allLinks = previous.allLinks.slice()
+        allLinks[votedLinkIndex] = link
+        const result = {
+          ...previous,
+          allLinks
+        }
+
+        return result
+      }
+    })
+  }
+
+  componentDidMount() {
+    this._subscribeToNewLinks()
+    this._subscribeToNewVotes()
+  }
 }
 
 export default graphql(ALL_LINKS_QUERY)(LinkList)
